@@ -55,9 +55,14 @@ wss.on('connection', (ws) => {
 });
 
 // Generate QR code as a data URL
-async function generateQRCode(data) {
+async function generateQRCode(eventId, attendeeaddress) {
+  const qrCodeData = JSON.stringify({
+    eventId,
+    attendeeaddress
+  });
+  
   try {
-    const qrCodeDataUrl = await QRCode.toDataURL(data); // Generate QR code as a data URL
+    const qrCodeDataUrl = await QRCode.toDataURL(qrCodeData); // Generate QR code as a data URL
     return qrCodeDataUrl;
   } catch (err) {
     console.error('Error generating QR code:', err);
@@ -112,7 +117,7 @@ app.post('/api/register', async (req, res) => {
 
   try {
     // Generate QR code as a data URL
-    const qrCodeDataUrl = await generateQRCode(`http://www.attensys.xyz/approve/?id=${id}&user=${walletAddress}`);
+    const qrCodeDataUrl = await generateQRCode(id, walletAddress);
 
     // Upload QR code image to Cloudinary
     const qrCodeImageUrl = await uploadQRCodeToCloudinary(qrCodeDataUrl);

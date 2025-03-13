@@ -2,7 +2,6 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const cloudinary = require('cloudinary').v2;
-const fs = require('fs');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -17,11 +16,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Generate QR code and save it as an image file
-async function generateQRCode(data, filePath) {
+// Generate QR code as a data URL
+async function generateQRCode(data) {
   try {
-    await QRCode.toFile(filePath, data); // Save QR code as an image file
-    return filePath;
+    const qrCodeDataUrl = await QRCode.toDataURL(data); // Generate QR code as a data URL
+    return qrCodeDataUrl;
   } catch (err) {
     console.error('Error generating QR code:', err);
     throw err;
@@ -29,9 +28,11 @@ async function generateQRCode(data, filePath) {
 }
 
 // Upload QR code image to Cloudinary
-async function uploadQRCodeToCloudinary(filePath) {
+async function uploadQRCodeToCloudinary(dataUrl) {
   try {
-    const result = await cloudinary.uploader.upload(filePath);
+    const result = await cloudinary.uploader.upload(dataUrl, {
+      resource_type: 'image',
+    });
     return result.secure_url; // Publicly accessible URL of the uploaded image
   } catch (err) {
     console.error('Error uploading QR code to Cloudinary:', err);
@@ -40,7 +41,7 @@ async function uploadQRCodeToCloudinary(filePath) {
 }
 
 // Send email with QR code
-async function sendEmailWithQRCode(email, qrCodeImageUrl,email, walletAddress, id, eventName ) {
+async function sendEmailWithQRCode(email, qrCodeImageUrl, walletAddress, id, eventName) {
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
@@ -54,14 +55,13 @@ async function sendEmailWithQRCode(email, qrCodeImageUrl,email, walletAddress, i
     to: email,
     subject: `${eventName} Registration Confirmation`,
     html: `
-      <h1>Thank you for registering for ${eventName}! We're excited to have you join us.!</h1>
+      <h1>Thank you for registering for ${eventName}! We're excited to have you join us!</h1>
       <p>Here is your QR code for event entry:</p>
       <img src="${qrCodeImageUrl}" alt="QR Code" />
       <p>Please present this QR code at the entrance for seamless check-in.</p>
       <p>For more details, visit: <a href="http://www.attensys.xyz">www.attensys.xyz</a></p>
       <p>We look forward to seeing you there!</p>
       <p>Best regards, AttenSys Team</p>
-      
     `,
   };
 
@@ -70,21 +70,17 @@ async function sendEmailWithQRCode(email, qrCodeImageUrl,email, walletAddress, i
 
 // Registration endpoint
 app.post('/api/register', async (req, res) => {
-  const { email, walletAddress, id, eventName} = req.body;
+  const { email, walletAddress, id, eventName } = req.body;
 
   try {
-    // Generate QR code and save it as an image file
-    const qrCodeFilePath = `./qrcodes/${Date.now()}.png`; // Save QR code in a "qrcodes" folder
-    await generateQRCode(`http://www.attensys.xyz/approve/?id=${id}&user=${walletAddress}`, qrCodeFilePath);
+    // Generate QR code as a data URL
+    const qrCodeDataUrl = await generateQRCode(`http://www.attensys.xyz/approve/?id=${id}&user=${walletAddress}`);
 
     // Upload QR code image to Cloudinary
-    const qrCodeImageUrl = await uploadQRCodeToCloudinary(qrCodeFilePath);
+    const qrCodeImageUrl = await uploadQRCodeToCloudinary(qrCodeDataUrl);
 
     // Send email with the QR code
-    await sendEmailWithQRCode(email, qrCodeImageUrl,email, walletAddress, id, eventName );
-
-    // Delete the local QR code file after uploading
-    fs.unlinkSync(qrCodeFilePath);
+    await sendEmailWithQRCode(email, qrCodeImageUrl, walletAddress, id, eventName);
 
     res.status(200).json({ message: 'Registration successful' });
   } catch (err) {
@@ -93,9 +89,8 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3000;
-
 // Start the server
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

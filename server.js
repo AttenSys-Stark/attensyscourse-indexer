@@ -132,7 +132,7 @@ app.get('/api/generate-master-qr', async (req, res) => {
   const sessionId = Math.random().toString(36).substring(7); // Generate a unique session ID
   const qrCodeData = JSON.stringify({
     sessionId,
-    wsUrl: 'wss://https://attensys-1a184d8bebe7.herokuapp.com', // Replace with your WebSocket server URL
+    wsUrl: 'wss://attensys-1a184d8bebe7.herokuapp.com', // Replace with your WebSocket server URL
   });
 
   try {

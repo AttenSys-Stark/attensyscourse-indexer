@@ -40,7 +40,7 @@ async function uploadQRCodeToCloudinary(filePath) {
 }
 
 // Send email with QR code
-async function sendEmailWithQRCode(email, qrCodeImageUrl) {
+async function sendEmailWithQRCode(email, qrCodeImageUrl,email, walletAddress, id, eventName ) {
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
@@ -52,12 +52,16 @@ async function sendEmailWithQRCode(email, qrCodeImageUrl) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Event Registration Confirmation',
+    subject: `${eventName} Registration Confirmation`,
     html: `
-      <h1>Thank you for registering!</h1>
+      <h1>Thank you for registering for ${eventName}! We're excited to have you join us.!</h1>
       <p>Here is your QR code for event entry:</p>
       <img src="${qrCodeImageUrl}" alt="QR Code" />
-      <p>Scan the QR code to visit: <a href="http://www.attensys.xyz">www.attensys.xyz</a></p>
+      <p>Please present this QR code at the entrance for seamless check-in.</p>
+      <p>For more details, visit: <a href="http://www.attensys.xyz">www.attensys.xyz</a></p>
+      <p>We look forward to seeing you there!</p>
+      <p>Best regards, AttenSys Team</p>
+      
     `,
   };
 
@@ -66,18 +70,18 @@ async function sendEmailWithQRCode(email, qrCodeImageUrl) {
 
 // Registration endpoint
 app.post('/api/register', async (req, res) => {
-  const { email } = req.body;
+  const { email, walletAddress, id, eventName} = req.body;
 
   try {
     // Generate QR code and save it as an image file
     const qrCodeFilePath = `./qrcodes/${Date.now()}.png`; // Save QR code in a "qrcodes" folder
-    await generateQRCode('http://www.attensys.xyz', qrCodeFilePath);
+    await generateQRCode(`http://www.attensys.xyz/approve/?id=${id}&user=${walletAddress}`, qrCodeFilePath);
 
     // Upload QR code image to Cloudinary
     const qrCodeImageUrl = await uploadQRCodeToCloudinary(qrCodeFilePath);
 
     // Send email with the QR code
-    await sendEmailWithQRCode(email, qrCodeImageUrl);
+    await sendEmailWithQRCode(email, qrCodeImageUrl,email, walletAddress, id, eventName );
 
     // Delete the local QR code file after uploading
     fs.unlinkSync(qrCodeFilePath);

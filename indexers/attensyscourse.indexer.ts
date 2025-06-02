@@ -1,10 +1,8 @@
 import { defineIndexer } from "apibara/indexer";
 import { useLogger } from "apibara/plugins";
 import { drizzleStorage, useDrizzleStorage } from "@apibara/plugin-drizzle";
-import { drizzle } from "@apibara/plugin-drizzle";
 import { StarknetStream } from "@apibara/starknet";
 import type { ApibaraRuntimeConfig } from "apibara/types";
-import * as schema from "../lib/schema";
 import {
   COURSE_CREATED,
   COURSE_REPLACED,
@@ -19,10 +17,15 @@ import {
   COURSE_UNAPPROVED,
 } from "../constant/constants";
 import { getDrizzlePgDatabase } from "../lib/db";
+import { handleCourseCreated } from "lib/handlers/course.handlers";
 
 export default function (runtimeConfig: ApibaraRuntimeConfig) {
-  const { startingBlock, streamUrl, postgresConnectionString, attensysCourseAddress } =
-    runtimeConfig["attensyscourse"];
+  const {
+    startingBlock,
+    streamUrl,
+    postgresConnectionString,
+    attensysCourseAddress,
+  } = runtimeConfig["attensyscourse"];
   const db = getDrizzlePgDatabase(postgresConnectionString);
 
   return defineIndexer(StarknetStream)({
@@ -32,7 +35,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
     filter: {
       events: [
         {
-          address: attensysCourseAddress,
+          address: attensysCourseAddress as `0x${string}`,
           keys: [
             COURSE_CREATED,
             COURSE_REPLACED,
@@ -50,79 +53,79 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       ],
     },
     plugins: [
-      drizzleStorage({ db, migrate: { migrationsFolder: "./drizzle" } }),
+      drizzleStorage({
+        db: db.db,
+        migrate: { migrationsFolder: "./drizzle" },
+        persistState: true,
+      }),
     ],
     async transform({ endCursor, finality, block }) {
       const logger = useLogger();
 
-    
       const { events, header } = block;
 
       if (events.length === 0) {
         logger.log(`No events found in block ${header?.blockNumber}`);
         return;
       }
-      
+
       for (const event of events) {
         logger.log(`Event ${event.eventIndex} tx=${event.transactionHash}`);
 
-         // Example snippet to insert data into db using drizzle with postgres
-         const { db: database } = useDrizzleStorage();
-         const eventKey = event.keys[0];
+        // Example snippet to insert data into db using drizzle with postgres
+        const { db: database } = useDrizzleStorage();
+        const eventKey = event.keys[0];
 
-         switch (eventKey) {
+        switch (eventKey) {
           case COURSE_CREATED:
-           //@todo 
+            await handleCourseCreated(event, db.db);
             break;
 
           case COURSE_REPLACED:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_CERT_CLAIMED:
-            //@todo 
+            //@todo
             break;
 
           case ADMIN_TRANSFERRED:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_SUSPENDED:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_UNSUSPENDED:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_REMOVED:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_PRICE_UPDATED:
-            //@todo 
+            //@todo
             break;
 
           case ACQUIRED_COURSE:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_APPROVED:
-            //@todo 
+            //@todo
             break;
 
           case COURSE_UNAPPROVED:
-            //@todo 
+            //@todo
             break;
 
           default:
             logger.log(`Unknown event key: ${eventKey}`);
             break;
-         }
-
-         
+        }
       }
-     
 
       // await database.insert(schema.cursorTable).values({
       //   endCursor: Number(endCursor?.orderKey),

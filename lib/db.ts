@@ -2,14 +2,27 @@ import * as schema from "./schema";
 import { drizzle as nodePgDrizzle } from "drizzle-orm/node-postgres";
 import { drizzle as pgLiteDrizzle } from "drizzle-orm/pglite";
 import pg from "pg";
+// import { drizzle } from "@apibara/plugin-drizzle";
+// import { Pool } from "pg";
 
 export function getDrizzlePgDatabase(connectionString: string) {
   // Create pglite instance
-  //@todo note what to watch for in connectionString
   if (connectionString.includes("memory")) {
     return {
       db: pgLiteDrizzle({
-        schema,
+        schema: {
+          courseCreated: schema.courseCreated,
+          courseReplaced: schema.courseReplaced,
+          courseCertClaimed: schema.courseCertClaimed,
+          adminTransferred: schema.adminTransferred,
+          courseSuspended: schema.courseSuspended,
+          courseUnsuspended: schema.courseUnsuspended,
+          courseRemoved: schema.courseRemoved,
+          coursePriceUpdated: schema.coursePriceUpdated,
+          acquiredCourse: schema.acquiredCourse,
+          courseApproved: schema.courseApproved,
+          courseUnapproved: schema.courseUnapproved,
+        },
         connection: {
           dataDir: connectionString,
         },

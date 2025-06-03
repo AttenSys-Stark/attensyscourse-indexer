@@ -17,7 +17,19 @@ import {
   COURSE_UNAPPROVED,
 } from "../constant/constants";
 import { getDrizzlePgDatabase } from "../lib/db";
-import { handleCourseCreated } from "lib/handlers/course.handlers";
+import {
+  handleCourseCreated,
+  handleCourseReplaced,
+  handleCourseCertClaimed,
+  handleAdminTransferred,
+  handleCourseSuspended,
+  handleCourseUnsuspended,
+  handleCourseRemoved,
+  handleCoursePriceUpdated,
+  handleAcquiredCourse,
+  handleCourseApproved,
+  handleCourseUnapproved,
+} from "../lib/handlers/course.handlers";
 
 export default function (runtimeConfig: ApibaraRuntimeConfig) {
   const {
@@ -26,6 +38,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
     postgresConnectionString,
     attensysCourseAddress,
   } = runtimeConfig["attensyscourse"];
+
   const db = getDrizzlePgDatabase(postgresConnectionString);
 
   return defineIndexer(StarknetStream)({
@@ -36,19 +49,19 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       events: [
         {
           address: attensysCourseAddress as `0x${string}`,
-          keys: [
-            COURSE_CREATED,
-            COURSE_REPLACED,
-            COURSE_CERT_CLAIMED,
-            ADMIN_TRANSFERRED,
-            COURSE_SUSPENDED,
-            COURSE_UNSUSPENDED,
-            COURSE_REMOVED,
-            COURSE_PRICE_UPDATED,
-            ACQUIRED_COURSE,
-            COURSE_APPROVED,
-            COURSE_UNAPPROVED,
-          ],
+          // keys: [
+          //   COURSE_CREATED,
+          //   COURSE_REPLACED,
+          //   COURSE_CERT_CLAIMED,
+          //   ADMIN_TRANSFERRED,
+          //   COURSE_SUSPENDED,
+          //   COURSE_UNSUSPENDED,
+          //   COURSE_REMOVED,
+          //   COURSE_PRICE_UPDATED,
+          //   ACQUIRED_COURSE,
+          //   COURSE_APPROVED,
+          //   COURSE_UNAPPROVED,
+          // ],
         },
       ],
     },
@@ -56,84 +69,96 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       drizzleStorage({
         db: db.db,
         migrate: { migrationsFolder: "./drizzle" },
-        persistState: true,
+        persistState: false,
       }),
     ],
     async transform({ endCursor, finality, block }) {
       const logger = useLogger();
 
+      // logger.info(`Starting indexer from block ${startingBlock}`);
+      // logger.info(`⛓️ Processing block: ${block.header.blockNumber}`);
+      // logger.info(`Monitoring contract address: ${attensysCourseAddress}`);
+
       const { events, header } = block;
 
       if (events.length === 0) {
         logger.log(`No events found in block ${header?.blockNumber}`);
+        logger.info("🚫 No events in this block");
         return;
       }
 
+      // logger.info(
+      //   `⛓️ Processing block ${header?.blockNumber} with ${events.length} events`
+      // );
+
       for (const event of events) {
-        logger.log(`Event ${event.eventIndex} tx=${event.transactionHash}`);
+        try {
+          logger.info(
+            `⛓️ Processing event ${event.eventIndex} from tx=${event.transactionHash}`
+          );
+          logger.debug(`Event keys: ${event.keys.join(", ")}`);
 
-        // Example snippet to insert data into db using drizzle with postgres
-        const { db: database } = useDrizzleStorage();
-        const eventKey = event.keys[0];
+          const { db: database } = useDrizzleStorage();
+          const eventKey = event.keys[0];
+          switch (eventKey) {
+            case COURSE_CREATED:
+              console.log("entered course created");
+              await handleCourseCreated(event, database);
+              break;
 
-        switch (eventKey) {
-          case COURSE_CREATED:
-            await handleCourseCreated(event, db.db);
-            break;
+            case COURSE_REPLACED:
+              console.log("entered course replaced");
+              await handleCourseReplaced(event, database);
+              break;
 
-          case COURSE_REPLACED:
-            //@todo
-            break;
+            case COURSE_CERT_CLAIMED:
+              await handleCourseCertClaimed(event, database);
+              break;
 
-          case COURSE_CERT_CLAIMED:
-            //@todo
-            break;
+            case ADMIN_TRANSFERRED:
+              await handleAdminTransferred(event, database);
+              break;
 
-          case ADMIN_TRANSFERRED:
-            //@todo
-            break;
+            case COURSE_SUSPENDED:
+              await handleCourseSuspended(event, database);
+              break;
 
-          case COURSE_SUSPENDED:
-            //@todo
-            break;
+            case COURSE_UNSUSPENDED:
+              await handleCourseUnsuspended(event, database);
+              break;
 
-          case COURSE_UNSUSPENDED:
-            //@todo
-            break;
+            case COURSE_REMOVED:
+              await handleCourseRemoved(event, database);
+              break;
 
-          case COURSE_REMOVED:
-            //@todo
-            break;
+            case COURSE_PRICE_UPDATED:
+              await handleCoursePriceUpdated(event, database);
+              break;
 
-          case COURSE_PRICE_UPDATED:
-            //@todo
-            break;
+            case ACQUIRED_COURSE:
+              await handleAcquiredCourse(event, database);
+              break;
 
-          case ACQUIRED_COURSE:
-            //@todo
-            break;
+            case COURSE_APPROVED:
+              await handleCourseApproved(event, database);
+              break;
 
-          case COURSE_APPROVED:
-            //@todo
-            break;
+            case COURSE_UNAPPROVED:
+              await handleCourseUnapproved(event, database);
+              break;
 
-          case COURSE_UNAPPROVED:
-            //@todo
-            break;
-
-          default:
-            logger.log(`Unknown event key: ${eventKey}`);
-            break;
+            default:
+              logger.warn(`Unknown event key: ${eventKey}`);
+              break;
+          }
+        } catch (error) {
+          logger.error(`Error processing event ${event.eventIndex}: ${error}`);
+          // Don't throw here to continue processing other events
         }
       }
 
-      // await database.insert(schema.cursorTable).values({
-      //   endCursor: Number(endCursor?.orderKey),
-      //   uniqueKey: `${endCursor?.uniqueKey}`,
-      // });
-
       logger.info(
-        "Transforming block | orderKey: ",
+        "Completed processing block | orderKey: ",
         endCursor?.orderKey,
         " | finality: ",
         finality

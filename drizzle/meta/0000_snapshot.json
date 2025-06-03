@@ -1,5 +1,5 @@
 {
-  "id": "d2072287-0c13-4b92-8761-f4b7469ccd9a",
+  "id": "d944288a-0a81-4aba-84aa-0e2799c739c1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -36,7 +36,16 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "unique_acquired_course_identifier_owner": {
+          "name": "unique_acquired_course_identifier_owner",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier",
+            "owner"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -61,7 +70,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "unique_admin_transferred_admin": {
+          "name": "unique_admin_transferred_admin",
+          "nullsNotDistinct": false,
+          "columns": [
+            "new_admin"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -86,7 +103,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "unique_course_approved_identifier": {
+          "name": "unique_course_approved_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -117,181 +142,21 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.course_price_updated": {
-      "name": "course_price_updated",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "course_identifier": {
-          "name": "course_identifier",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "new_price": {
-          "name": "new_price",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
+      "uniqueConstraints": {
+        "unique_course_cert_claimed_identifier": {
+          "name": "unique_course_cert_claimed_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.course_removed": {
-      "name": "course_removed",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "course_identifier": {
-          "name": "course_identifier",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.course_replaced": {
-      "name": "course_replaced",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "course_identifier": {
-          "name": "course_identifier",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "owner_": {
-          "name": "owner_",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "new_course_uri": {
-          "name": "new_course_uri",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.course_suspended": {
-      "name": "course_suspended",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "course_identifier": {
-          "name": "course_identifier",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.course_unapproved": {
-      "name": "course_unapproved",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "course_identifier": {
-          "name": "course_identifier",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.course_unsuspended": {
-      "name": "course_unsuspended",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "course_identifier": {
-          "name": "course_identifier",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.courses": {
-      "name": "courses",
+    "public.course_created": {
+      "name": "course_created",
       "schema": "",
       "columns": {
         "id": {
@@ -359,11 +224,234 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "courses_course_address_unique": {
-          "name": "courses_course_address_unique",
+        "course_created_course_address_unique": {
+          "name": "course_created_course_address_unique",
           "nullsNotDistinct": false,
           "columns": [
             "course_address"
+          ]
+        },
+        "unique_course_created_identifier": {
+          "name": "unique_course_created_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course_price_updated": {
+      "name": "course_price_updated",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "course_identifier": {
+          "name": "course_identifier",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "new_price": {
+          "name": "new_price",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_course_price_updated_identifier": {
+          "name": "unique_course_price_updated_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course_removed": {
+      "name": "course_removed",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "course_identifier": {
+          "name": "course_identifier",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_course_removed_identifier": {
+          "name": "unique_course_removed_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course_replaced": {
+      "name": "course_replaced",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "course_identifier": {
+          "name": "course_identifier",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_": {
+          "name": "owner_",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "new_course_uri": {
+          "name": "new_course_uri",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_course_replaced_identifier": {
+          "name": "unique_course_replaced_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course_suspended": {
+      "name": "course_suspended",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "course_identifier": {
+          "name": "course_identifier",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_course_suspended_identifier": {
+          "name": "unique_course_suspended_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course_unapproved": {
+      "name": "course_unapproved",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "course_identifier": {
+          "name": "course_identifier",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_course_unapproved_identifier": {
+          "name": "unique_course_unapproved_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course_unsuspended": {
+      "name": "course_unsuspended",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "course_identifier": {
+          "name": "course_identifier",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_course_unsuspended_identifier": {
+          "name": "unique_course_unsuspended_identifier",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
           ]
         }
       },

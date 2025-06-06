@@ -87,10 +87,21 @@ export async function handleCourseCreated(
 
     logger.info(`Attempting to insert values: ${JSON.stringify(logValues)}`);
 
-    await db.insert(courseCreated).values(values).onConflictDoUpdate({
-      target: courseCreated.courseAddress,
-      set: values,
-    });
+    await db
+      .insert(courseCreated)
+      .values(values)
+      .onConflictDoUpdate({
+        target: courseCreated.courseAddress,
+        set: {
+          courseCreator: values.courseCreator,
+          accessment: values.accessment,
+          baseUri: values.baseUri,
+          name: values.name,
+          symbol: values.symbol,
+          courseIpfsUri: values.courseIpfsUri,
+          isApproved: values.isApproved,
+        },
+      });
 
     logger.info("Successfully processed CourseCreated event");
   } catch (error) {
@@ -134,10 +145,15 @@ export async function handleCourseReplaced(
       newCourseUri: new_course_uri as string,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseReplaced).values(values).onConflictDoUpdate({
-      target: courseReplaced.courseIdentifier,
-      set: values,
-    });
+    await db
+      .insert(courseReplaced)
+      .values(values)
+      .onConflictDoUpdate({
+        target: courseReplaced.courseIdentifier,
+        set: {
+          newCourseUri: values.newCourseUri,
+        },
+      });
     logger.info("Successfully processed CourseReplaced event");
   } catch (error) {
     logger.error(`Error in handleCourseReplaced: ${error}`);
@@ -179,10 +195,15 @@ export async function handleCourseCertClaimed(
       candidate: candidate as string,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseCertClaimed).values(values).onConflictDoUpdate({
-      target: courseCertClaimed.courseIdentifier,
-      set: values,
-    });
+    await db
+      .insert(courseCertClaimed)
+      .values(values)
+      .onConflictDoUpdate({
+        target: courseCertClaimed.courseIdentifier,
+        set: {
+          candidate: values.candidate,
+        },
+      });
     logger.info("Successfully processed CourseCertClaimed event");
   } catch (error) {
     logger.error(`Error in handleCourseCertClaimed: ${error}`);
@@ -219,10 +240,7 @@ export async function handleAdminTransferred(
       newAdmin: new_admin as string,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(adminTransferred).values(values).onConflictDoUpdate({
-      target: adminTransferred.newAdmin,
-      set: values,
-    });
+    await db.insert(adminTransferred).values(values);
     logger.info("Successfully processed AdminTransferred event");
   } catch (error) {
     logger.error(`Error in handleAdminTransferred: ${error}`);
@@ -263,10 +281,7 @@ export async function handleCourseSuspended(
       courseIdentifier,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseSuspended).values(values).onConflictDoUpdate({
-      target: courseSuspended.courseIdentifier,
-      set: values,
-    });
+    await db.insert(courseSuspended).values(values);
     logger.info("Successfully processed CourseSuspended event");
   } catch (error) {
     logger.error(`Error in handleCourseSuspended: ${error}`);
@@ -307,10 +322,7 @@ export async function handleCourseUnsuspended(
       courseIdentifier,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseUnsuspended).values(values).onConflictDoUpdate({
-      target: courseUnsuspended.courseIdentifier,
-      set: values,
-    });
+    await db.insert(courseUnsuspended).values(values);
     logger.info("Successfully processed CourseUnsuspended event");
   } catch (error) {
     logger.error(`Error in handleCourseUnsuspended: ${error}`);
@@ -351,10 +363,15 @@ export async function handleCourseRemoved(
       courseIdentifier,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseRemoved).values(values).onConflictDoUpdate({
-      target: courseRemoved.courseIdentifier,
-      set: values,
-    });
+    await db
+      .insert(courseRemoved)
+      .values(values)
+      .onConflictDoUpdate({
+        target: courseRemoved.courseIdentifier,
+        set: {
+          courseIdentifier: values.courseIdentifier,
+        },
+      });
     logger.info("Successfully processed CourseRemoved event");
   } catch (error) {
     logger.error(`Error in handleCourseRemoved: ${error}`);
@@ -400,10 +417,15 @@ export async function handleCoursePriceUpdated(
       newPrice,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(coursePriceUpdated).values(values).onConflictDoUpdate({
-      target: coursePriceUpdated.courseIdentifier,
-      set: values,
-    });
+    await db
+      .insert(coursePriceUpdated)
+      .values(values)
+      .onConflictDoUpdate({
+        target: coursePriceUpdated.courseIdentifier,
+        set: {
+          newPrice: values.newPrice,
+        },
+      });
     logger.info("Successfully processed CoursePriceUpdated event");
   } catch (error) {
     logger.error(`Error in handleCoursePriceUpdated: ${error}`);
@@ -451,7 +473,9 @@ export async function handleAcquiredCourse(
       .values(values)
       .onConflictDoUpdate({
         target: [acquiredCourse.courseIdentifier, acquiredCourse.owner],
-        set: values,
+        set: {
+          candidate: values.candidate,
+        },
       });
     logger.info("Successfully processed AcquiredCourse event");
   } catch (error) {
@@ -493,10 +517,7 @@ export async function handleCourseApproved(
       courseIdentifier,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseApproved).values(values).onConflictDoUpdate({
-      target: courseApproved.courseIdentifier,
-      set: values,
-    });
+    await db.insert(courseApproved).values(values);
     logger.info("Successfully processed CourseApproved event");
   } catch (error) {
     logger.error(`Error in handleCourseApproved: ${error}`);
@@ -537,10 +558,7 @@ export async function handleCourseUnapproved(
       courseIdentifier,
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseUnapproved).values(values).onConflictDoUpdate({
-      target: courseUnapproved.courseIdentifier,
-      set: values,
-    });
+    await db.insert(courseUnapproved).values(values);
     logger.info("Successfully processed CourseUnapproved event");
   } catch (error) {
     logger.error(`Error in handleCourseUnapproved: ${error}`);

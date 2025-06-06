@@ -39,6 +39,8 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
     attensysCourseAddress,
   } = runtimeConfig["attensyscourse"];
 
+  console.log('DATABASE_URL:', process.env.DATABASE_URL);
+
   const db = getDrizzlePgDatabase(postgresConnectionString);
 
   return defineIndexer(StarknetStream)({
@@ -49,19 +51,19 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       events: [
         {
           address: attensysCourseAddress as `0x${string}`,
-          // keys: [
-          //   COURSE_CREATED,
-          //   COURSE_REPLACED,
-          //   COURSE_CERT_CLAIMED,
-          //   ADMIN_TRANSFERRED,
-          //   COURSE_SUSPENDED,
-          //   COURSE_UNSUSPENDED,
-          //   COURSE_REMOVED,
-          //   COURSE_PRICE_UPDATED,
-          //   ACQUIRED_COURSE,
-          //   COURSE_APPROVED,
-          //   COURSE_UNAPPROVED,
-          // ],
+          keys: [
+            // COURSE_CREATED,
+            // COURSE_REPLACED,
+            // COURSE_CERT_CLAIMED,
+            // ADMIN_TRANSFERRED,
+            // COURSE_SUSPENDED,
+            // COURSE_UNSUSPENDED,
+            // COURSE_REMOVED,
+            // COURSE_PRICE_UPDATED,
+            // ACQUIRED_COURSE,
+            // COURSE_APPROVED,
+            // COURSE_UNAPPROVED,
+          ],
         },
       ],
     },
@@ -72,42 +74,94 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
         persistState: false,
       }),
     ],
-    async transform({ endCursor, finality, block }) {
+    async transform({
+      endCursor,
+      finality,
+      block,
+    }: {
+      endCursor: string | bigint | { toString(): string };
+      finality: string;
+      block: any;
+    }) {
       const logger = useLogger();
 
-      // logger.info(`Starting indexer from block ${startingBlock}`);
-      // logger.info(`⛓️ Processing block: ${block.header.blockNumber}`);
-      // logger.info(`Monitoring contract address: ${attensysCourseAddress}`);
-
       const { events, header } = block;
+      const currentBlockNumber = header?.blockNumber;
 
-      if (events.length === 0) {
-        logger.log(`No events found in block ${header?.blockNumber}`);
-        logger.info("🚫 No events in this block");
+      // Enhanced logging for block progression
+      logger.info(`Starting block configured: ${startingBlock}`);
+      logger.info(`Current block being processed: ${currentBlockNumber}`);
+      logger.info(`Block range: ${startingBlock} -> ${currentBlockNumber}`);
+      logger.info(`Block finality: ${finality}`);
+
+      // Safely log endCursor without BigInt serialization issues
+      try {
+        const cursorStr =
+          typeof endCursor === "bigint"
+            ? endCursor.toString()
+            : JSON.stringify(endCursor);
+        logger.info(`End cursor: ${cursorStr}`);
+      } catch (error) {
+        logger.info(`End cursor: [Unable to serialize]`);
+      }
+
+      // Check if we're processing blocks in order
+      if (BigInt(currentBlockNumber) < BigInt(startingBlock)) {
+        logger.warn(
+          `Skipping block ${currentBlockNumber} as it's before our starting block ${startingBlock}`
+        );
         return;
       }
 
-      // logger.info(
-      //   `⛓️ Processing block ${header?.blockNumber} with ${events.length} events`
-      // );
+      // Log block processing status
+      logger.info(
+        `Processing block ${currentBlockNumber} with ${events.length} events`
+      );
+      logger.info(
+        `Contract address we're monitoring: ${attensysCourseAddress}`
+      );
+
+      // Process events in the block
+      logger.info(
+        `Found ${events.length} events in block ${currentBlockNumber}`
+      );
+      for (const event of events) {
+        logger.info(`Event address: ${event.address}`);
+        logger.info(`Event keys: ${event.keys.join(", ")}`);
+        logger.info(`Event data: ${JSON.stringify(event.data)}`);
+        logger.info(
+          `Event keys in hex: ${event.keys.map((k: bigint) => k.toString(16)).join(", ")}`
+        );
+      }
 
       for (const event of events) {
         try {
           logger.info(
             `⛓️ Processing event ${event.eventIndex} from tx=${event.transactionHash}`
           );
-          logger.debug(`Event keys: ${event.keys.join(", ")}`);
+          logger.info(`Event address: ${event.address}`);
+          logger.info(`Event keys: ${event.keys.join(", ")}`);
+
+          // Check if this event is from our contract
+          if (
+            event.address.toLowerCase() !== attensysCourseAddress.toLowerCase()
+          ) {
+            logger.info(
+              `Skipping event from different contract: ${event.address}`
+            );
+            continue;
+          }
 
           const { db: database } = useDrizzleStorage();
           const eventKey = event.keys[0];
           switch (eventKey) {
             case COURSE_CREATED:
-              console.log("entered course created");
+              logger.info("Processing CourseCreated event");
               await handleCourseCreated(event, database);
               break;
 
             case COURSE_REPLACED:
-              console.log("entered course replaced");
+              logger.info("Processing CourseReplaced event");
               await handleCourseReplaced(event, database);
               break;
 
@@ -159,7 +213,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
 
       logger.info(
         "Completed processing block | orderKey: ",
-        endCursor?.orderKey,
+        endCursor,
         " | finality: ",
         finality
       );

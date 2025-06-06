@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "acquired_course" (
+CREATE TABLE "acquired_course" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	"owner" varchar(255) NOT NULL,
@@ -6,26 +6,26 @@ CREATE TABLE IF NOT EXISTS "acquired_course" (
 	CONSTRAINT "unique_acquired_course_identifier_owner" UNIQUE("course_identifier","owner")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "admin_transferred" (
+CREATE TABLE "admin_transferred" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"new_admin" varchar(255) NOT NULL,
 	CONSTRAINT "unique_admin_transferred_admin" UNIQUE("new_admin")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_approved" (
+CREATE TABLE "course_approved" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	CONSTRAINT "unique_course_approved_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_cert_claimed" (
+CREATE TABLE "course_cert_claimed" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	"candidate" varchar(255) NOT NULL,
 	CONSTRAINT "unique_course_cert_claimed_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_created" (
+CREATE TABLE "course_created" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_address" varchar(255) NOT NULL,
 	"course_creator" varchar(255) NOT NULL,
@@ -40,20 +40,20 @@ CREATE TABLE IF NOT EXISTS "course_created" (
 	CONSTRAINT "unique_course_created_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_price_updated" (
+CREATE TABLE "course_price_updated" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	"new_price" bigint NOT NULL,
 	CONSTRAINT "unique_course_price_updated_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_removed" (
+CREATE TABLE "course_removed" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	CONSTRAINT "unique_course_removed_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_replaced" (
+CREATE TABLE "course_replaced" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	"owner_" varchar(255) NOT NULL,
@@ -61,19 +61,19 @@ CREATE TABLE IF NOT EXISTS "course_replaced" (
 	CONSTRAINT "unique_course_replaced_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_suspended" (
+CREATE TABLE "course_suspended" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	CONSTRAINT "unique_course_suspended_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_unapproved" (
+CREATE TABLE "course_unapproved" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	CONSTRAINT "unique_course_unapproved_identifier" UNIQUE("course_identifier")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "course_unsuspended" (
+CREATE TABLE "course_unsuspended" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"course_identifier" bigint NOT NULL,
 	CONSTRAINT "unique_course_unsuspended_identifier" UNIQUE("course_identifier")

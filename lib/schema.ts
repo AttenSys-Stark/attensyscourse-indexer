@@ -1,7 +1,3 @@
-//  --- Add your pg table schemas here ----
-
-// import { bigint, pgTable, text, uuid } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import {
   bigint,
   boolean,

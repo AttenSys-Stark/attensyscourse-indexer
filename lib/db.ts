@@ -2,8 +2,7 @@ import * as schema from "./schema";
 import { drizzle as nodePgDrizzle } from "drizzle-orm/node-postgres";
 import { drizzle as pgLiteDrizzle } from "drizzle-orm/pglite";
 import pg from "pg";
-// import { drizzle } from "@apibara/plugin-drizzle";
-// import { Pool } from "pg";
+
 
 export function getDrizzlePgDatabase(connectionString: string) {
   // Create pglite instance

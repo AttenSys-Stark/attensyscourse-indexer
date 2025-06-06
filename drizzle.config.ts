@@ -5,6 +5,6 @@ export default {
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env["POSTGRES_CONNECTION_STRING"] ?? "memory://attensyscourse",
+    url: process.env["DATABASE_URL"] ?? "memory://attensyscourse",
   },
 } satisfies Config;

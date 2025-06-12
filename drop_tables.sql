@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS "acquired_course" CASCADE;
+DROP TABLE IF EXISTS "course_created" CASCADE;
+DROP TABLE IF EXISTS "course_replaced" CASCADE;
+DROP TABLE IF EXISTS "course_cert_claimed" CASCADE;
+DROP TABLE IF EXISTS "admin_transferred" CASCADE;
+DROP TABLE IF EXISTS "course_suspended" CASCADE;
+DROP TABLE IF EXISTS "course_unsuspended" CASCADE;
+DROP TABLE IF EXISTS "course_removed" CASCADE;
+DROP TABLE IF EXISTS "course_price_updated" CASCADE;
+DROP TABLE IF EXISTS "course_approved" CASCADE;
+DROP TABLE IF EXISTS "course_unapproved" CASCADE; 

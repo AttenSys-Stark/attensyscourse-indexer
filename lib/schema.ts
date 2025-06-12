@@ -6,6 +6,7 @@ import {
   serial,
   unique,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // Tables
 export const courseCreated = pgTable(
@@ -16,13 +17,16 @@ export const courseCreated = pgTable(
       .unique()
       .notNull(),
     courseCreator: varchar("course_creator", { length: 255 }).notNull(),
-    courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
+    courseIdentifier: bigint("course_identifier", { mode: "number" })
+      .notNull()
+      .unique(),
     accessment: boolean("accessment").notNull(),
     baseUri: varchar("base_uri", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
     symbol: varchar("symbol", { length: 255 }).notNull(),
     courseIpfsUri: varchar("course_ipfs_uri", { length: 255 }).notNull(),
     isApproved: boolean("is_approved").notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseCreatedIdentifier: unique(
@@ -38,6 +42,7 @@ export const courseReplaced = pgTable(
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     owner_: varchar("owner_", { length: 255 }).notNull(),
     newCourseUri: varchar("new_course_uri", { length: 255 }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseReplacedIdentifier: unique(
@@ -52,6 +57,7 @@ export const courseCertClaimed = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     candidate: varchar("candidate", { length: 255 }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseCertClaimedIdentifier: unique(
@@ -65,6 +71,7 @@ export const adminTransferred = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     newAdmin: varchar("new_admin", { length: 255 }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueAdminTransferredAdmin: unique("unique_admin_transferred_admin").on(
@@ -78,6 +85,7 @@ export const courseSuspended = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseSuspendedIdentifier: unique(
@@ -91,6 +99,7 @@ export const courseUnsuspended = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseUnsuspendedIdentifier: unique(
@@ -104,6 +113,7 @@ export const courseRemoved = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseRemovedIdentifier: unique(
@@ -118,6 +128,7 @@ export const coursePriceUpdated = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     newPrice: bigint("new_price", { mode: "number" }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCoursePriceUpdatedIdentifier: unique(
@@ -133,6 +144,7 @@ export const acquiredCourse = pgTable(
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     owner: varchar("owner", { length: 255 }).notNull(),
     candidate: varchar("candidate", { length: 255 }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueAcquiredCourseIdentifierOwner: unique(
@@ -146,6 +158,7 @@ export const courseApproved = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseApprovedIdentifier: unique(
@@ -159,10 +172,117 @@ export const courseUnapproved = pgTable(
   {
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
+    blockNumber: bigint("block_number", { mode: "number" }).notNull(),
   },
   (table) => ({
     uniqueCourseUnapprovedIdentifier: unique(
       "unique_course_unapproved_identifier"
     ).on(table.courseIdentifier),
+  })
+);
+
+// Relations
+export const courseCreatedRelations = relations(
+  courseCreated,
+  ({ many }: { many: any }) => ({
+    replaced: many(courseReplaced),
+    certClaimed: many(courseCertClaimed),
+    suspended: many(courseSuspended),
+    unsuspended: many(courseUnsuspended),
+    removed: many(courseRemoved),
+    priceUpdated: many(coursePriceUpdated),
+    approved: many(courseApproved),
+    unapproved: many(courseUnapproved),
+    acquired: many(acquiredCourse),
+  })
+);
+
+export const courseReplacedRelations = relations(
+  courseReplaced,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseReplaced.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const courseCertClaimedRelations = relations(
+  courseCertClaimed,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseCertClaimed.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const courseSuspendedRelations = relations(
+  courseSuspended,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseSuspended.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const courseUnsuspendedRelations = relations(
+  courseUnsuspended,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseUnsuspended.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const courseRemovedRelations = relations(
+  courseRemoved,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseRemoved.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const coursePriceUpdatedRelations = relations(
+  coursePriceUpdated,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [coursePriceUpdated.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const courseApprovedRelations = relations(
+  courseApproved,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseApproved.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const courseUnapprovedRelations = relations(
+  courseUnapproved,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [courseUnapproved.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
+  })
+);
+
+export const acquiredCourseRelations = relations(
+  acquiredCourse,
+  ({ one }: { one: any }) => ({
+    course: one(courseCreated, {
+      fields: [acquiredCourse.courseIdentifier],
+      references: [courseCreated.courseIdentifier],
+    }),
   })
 );

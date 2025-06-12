@@ -39,8 +39,6 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
     attensysCourseAddress,
   } = runtimeConfig["attensyscourse"];
 
-  console.log('DATABASE_URL:', process.env.DATABASE_URL);
-
   const db = getDrizzlePgDatabase(postgresConnectionString);
 
   return defineIndexer(StarknetStream)({
@@ -51,19 +49,47 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       events: [
         {
           address: attensysCourseAddress as `0x${string}`,
-          keys: [
-            // COURSE_CREATED,
-            // COURSE_REPLACED,
-            // COURSE_CERT_CLAIMED,
-            // ADMIN_TRANSFERRED,
-            // COURSE_SUSPENDED,
-            // COURSE_UNSUSPENDED,
-            // COURSE_REMOVED,
-            // COURSE_PRICE_UPDATED,
-            // ACQUIRED_COURSE,
-            // COURSE_APPROVED,
-            // COURSE_UNAPPROVED,
-          ],
+          keys: [COURSE_CREATED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_REPLACED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_CERT_CLAIMED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [ADMIN_TRANSFERRED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_SUSPENDED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_UNSUSPENDED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_REMOVED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_PRICE_UPDATED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [ACQUIRED_COURSE],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_APPROVED],
+        },
+        {
+          address: attensysCourseAddress as `0x${string}`,
+          keys: [COURSE_UNAPPROVED],
         },
       ],
     },
@@ -126,7 +152,6 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
         `Found ${events.length} events in block ${currentBlockNumber}`
       );
       for (const event of events) {
-        logger.info(`Event address: ${event.address}`);
         logger.info(`Event keys: ${event.keys.join(", ")}`);
         logger.info(`Event data: ${JSON.stringify(event.data)}`);
         logger.info(
@@ -157,48 +182,60 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
           switch (eventKey) {
             case COURSE_CREATED:
               logger.info("Processing CourseCreated event");
-              await handleCourseCreated(event, database);
+              await handleCourseCreated(event, currentBlockNumber, database);
               break;
 
             case COURSE_REPLACED:
               logger.info("Processing CourseReplaced event");
-              await handleCourseReplaced(event, database);
+              await handleCourseReplaced(event, currentBlockNumber, database);
               break;
 
             case COURSE_CERT_CLAIMED:
-              await handleCourseCertClaimed(event, database);
+              await handleCourseCertClaimed(
+                event,
+                currentBlockNumber,
+                database
+              );
               break;
 
             case ADMIN_TRANSFERRED:
-              await handleAdminTransferred(event, database);
+              await handleAdminTransferred(event, currentBlockNumber, database);
               break;
 
             case COURSE_SUSPENDED:
-              await handleCourseSuspended(event, database);
+              await handleCourseSuspended(event, currentBlockNumber, database);
               break;
 
             case COURSE_UNSUSPENDED:
-              await handleCourseUnsuspended(event, database);
+              await handleCourseUnsuspended(
+                event,
+                currentBlockNumber,
+                database
+              );
               break;
 
             case COURSE_REMOVED:
-              await handleCourseRemoved(event, database);
+              await handleCourseRemoved(event, currentBlockNumber, database);
               break;
 
             case COURSE_PRICE_UPDATED:
-              await handleCoursePriceUpdated(event, database);
+              await handleCoursePriceUpdated(
+                event,
+                currentBlockNumber,
+                database
+              );
               break;
 
             case ACQUIRED_COURSE:
-              await handleAcquiredCourse(event, database);
+              await handleAcquiredCourse(event, currentBlockNumber, database);
               break;
 
             case COURSE_APPROVED:
-              await handleCourseApproved(event, database);
+              await handleCourseApproved(event, currentBlockNumber, database);
               break;
 
             case COURSE_UNAPPROVED:
-              await handleCourseUnapproved(event, database);
+              await handleCourseUnapproved(event, currentBlockNumber, database);
               break;
 
             default:

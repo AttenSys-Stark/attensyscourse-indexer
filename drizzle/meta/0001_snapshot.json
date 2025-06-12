@@ -1,6 +1,6 @@
 {
-  "id": "5a0de6bf-05ec-49b5-bc19-672af668cc3c",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "343070c3-5453-4e45-84c2-198589a41c32",
+  "prevId": "5a0de6bf-05ec-49b5-bc19-672af668cc3c",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -259,6 +259,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "course_address"
+          ]
+        },
+        "course_created_course_identifier_unique": {
+          "name": "course_created_course_identifier_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_identifier"
           ]
         },
         "unique_course_created_identifier": {

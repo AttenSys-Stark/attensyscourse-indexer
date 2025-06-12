@@ -10,7 +10,8 @@
     "build": "apibara build",
     "typecheck": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",
-    "drizzle:migrate": "drizzle-kit migrate"
+    "drizzle:migrate": "drizzle-kit migrate",
+    "api": "tsx lib/api.ts"
   },
   "dependencies": {
     "@apibara/plugin-drizzle": "next",
@@ -18,14 +19,17 @@
     "@apibara/starknet": "next",
     "@electric-sql/pglite": "^0.2.17",
     "apibara": "next",
+    "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.44.2",
+    "express": "^5.1.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
     "@types/pg": "^8.11.10",
+    "tsx": "^4.19.4",
     "typescript": "^5.6.2"
   }
 }

@@ -17,8 +17,14 @@ import type { PgDatabase } from "drizzle-orm/pg-core";
 import { Abi } from "starknet";
 import { useLogger } from "apibara/plugins";
 
+const stripHexPrefix = (hex: string) =>
+  hex.startsWith("0x") ? hex.slice(2) : hex;
+const hexToUtf8 = (hex: string) =>
+  Buffer.from(stripHexPrefix(hex), "hex").toString("utf8");
+
 export async function handleCourseCreated(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -69,11 +75,12 @@ export async function handleCourseCreated(
       courseCreator: owner_ as string,
       courseIdentifier,
       accessment: accessment_ as boolean,
-      baseUri: base_uri as string,
-      name: name_ as string,
-      symbol: symbol as string,
-      courseIpfsUri: course_ipfs_uri as string,
+      baseUri: hexToUtf8(base_uri),
+      name: hexToUtf8(name_),
+      symbol: hexToUtf8(symbol),
+      courseIpfsUri: hexToUtf8(course_ipfs_uri),
       isApproved: is_approved as boolean,
+      blockNumber: blockNumber,
     };
 
     // Log values safely
@@ -87,23 +94,32 @@ export async function handleCourseCreated(
 
     logger.info(`Attempting to insert values: ${JSON.stringify(logValues)}`);
 
-    await db
-      .insert(courseCreated)
-      .values(values)
-      .onConflictDoUpdate({
-        target: courseCreated.courseAddress,
-        set: {
-          courseCreator: values.courseCreator,
-          accessment: values.accessment,
-          baseUri: values.baseUri,
-          name: values.name,
-          symbol: values.symbol,
-          courseIpfsUri: values.courseIpfsUri,
-          isApproved: values.isApproved,
-        },
-      });
+    try {
+      const result = await db
+        .insert(courseCreated)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [courseCreated.courseIdentifier],
+          set: {
+            courseAddress: values.courseAddress,
+            courseCreator: values.courseCreator,
+            accessment: values.accessment,
+            baseUri: values.baseUri,
+            name: values.name,
+            symbol: values.symbol,
+            courseIpfsUri: values.courseIpfsUri,
+            isApproved: values.isApproved,
+            blockNumber: values.blockNumber,
+          },
+        })
+        .returning();
 
-    logger.info("Successfully processed CourseCreated event");
+      console.log("Insert result:", result);
+      logger.info("Successfully processed CourseCreated event");
+    } catch (error) {
+      console.error(`Error in handleCourseCreated: ${error}`);
+      throw error;
+    }
   } catch (error) {
     logger.error(`Error in handleCourseCreated: ${error}`);
     throw error;
@@ -112,6 +128,7 @@ export async function handleCourseCreated(
 
 export async function handleCourseReplaced(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -143,6 +160,7 @@ export async function handleCourseReplaced(
       courseIdentifier,
       owner_: owner_ as string,
       newCourseUri: new_course_uri as string,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db
@@ -152,6 +170,7 @@ export async function handleCourseReplaced(
         target: courseReplaced.courseIdentifier,
         set: {
           newCourseUri: values.newCourseUri,
+          blockNumber: values.blockNumber,
         },
       });
     logger.info("Successfully processed CourseReplaced event");
@@ -163,6 +182,7 @@ export async function handleCourseReplaced(
 
 export async function handleCourseCertClaimed(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -193,6 +213,7 @@ export async function handleCourseCertClaimed(
     const values = {
       courseIdentifier,
       candidate: candidate as string,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db
@@ -202,6 +223,7 @@ export async function handleCourseCertClaimed(
         target: courseCertClaimed.courseIdentifier,
         set: {
           candidate: values.candidate,
+          blockNumber: values.blockNumber,
         },
       });
     logger.info("Successfully processed CourseCertClaimed event");
@@ -213,6 +235,7 @@ export async function handleCourseCertClaimed(
 
 export async function handleAdminTransferred(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -238,9 +261,19 @@ export async function handleAdminTransferred(
     const { new_admin } = decodedEvent.args;
     const values = {
       newAdmin: new_admin as string,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(adminTransferred).values(values);
+    await db
+      .insert(adminTransferred)
+      .values(values)
+      .onConflictDoUpdate({
+        target: adminTransferred.newAdmin,
+        set: {
+          newAdmin: values.newAdmin,
+          blockNumber: values.blockNumber,
+        },
+      });
     logger.info("Successfully processed AdminTransferred event");
   } catch (error) {
     logger.error(`Error in handleAdminTransferred: ${error}`);
@@ -250,6 +283,7 @@ export async function handleAdminTransferred(
 
 export async function handleCourseSuspended(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -279,6 +313,7 @@ export async function handleCourseSuspended(
         : Number(course_identifier);
     const values = {
       courseIdentifier,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db.insert(courseSuspended).values(values);
@@ -291,6 +326,7 @@ export async function handleCourseSuspended(
 
 export async function handleCourseUnsuspended(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -320,6 +356,7 @@ export async function handleCourseUnsuspended(
         : Number(course_identifier);
     const values = {
       courseIdentifier,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db.insert(courseUnsuspended).values(values);
@@ -332,6 +369,7 @@ export async function handleCourseUnsuspended(
 
 export async function handleCourseRemoved(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -361,6 +399,7 @@ export async function handleCourseRemoved(
         : Number(course_identifier);
     const values = {
       courseIdentifier,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db
@@ -381,6 +420,7 @@ export async function handleCourseRemoved(
 
 export async function handleCoursePriceUpdated(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -415,6 +455,7 @@ export async function handleCoursePriceUpdated(
     const values = {
       courseIdentifier,
       newPrice,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db
@@ -435,6 +476,7 @@ export async function handleCoursePriceUpdated(
 
 export async function handleAcquiredCourse(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -466,6 +508,7 @@ export async function handleAcquiredCourse(
       courseIdentifier,
       owner: owner as string,
       candidate: candidate as string,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db
@@ -475,6 +518,7 @@ export async function handleAcquiredCourse(
         target: [acquiredCourse.courseIdentifier, acquiredCourse.owner],
         set: {
           candidate: values.candidate,
+          blockNumber: values.blockNumber,
         },
       });
     logger.info("Successfully processed AcquiredCourse event");
@@ -486,6 +530,7 @@ export async function handleAcquiredCourse(
 
 export async function handleCourseApproved(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -515,9 +560,18 @@ export async function handleCourseApproved(
         : Number(course_identifier);
     const values = {
       courseIdentifier,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
-    await db.insert(courseApproved).values(values);
+    await db
+      .insert(courseApproved)
+      .values(values)
+      .onConflictDoUpdate({
+        target: courseApproved.courseIdentifier,
+        set: {
+          blockNumber: values.blockNumber,
+        },
+      });
     logger.info("Successfully processed CourseApproved event");
   } catch (error) {
     logger.error(`Error in handleCourseApproved: ${error}`);
@@ -527,6 +581,7 @@ export async function handleCourseApproved(
 
 export async function handleCourseUnapproved(
   event: any,
+  blockNumber: any,
   db: PgDatabase<any, any, any>
 ) {
   const logger = useLogger();
@@ -556,6 +611,7 @@ export async function handleCourseUnapproved(
         : Number(course_identifier);
     const values = {
       courseIdentifier,
+      blockNumber: Number(blockNumber),
     };
     logger.info(`Attempting to insert values: ${JSON.stringify(values)}`);
     await db.insert(courseUnapproved).values(values);

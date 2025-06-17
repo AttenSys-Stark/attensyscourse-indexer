@@ -1,0 +1,21 @@
+{
+  "name": "attensys-course-api",
+  "description": "API server for Attensys Course events",
+  "repository": "https://github.com/yourusername/attensys",
+  "keywords": ["node", "express", "postgres", "starknet"],
+  "env": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL connection string",
+      "required": true
+    },
+    "PORT": {
+      "description": "Port to run the server on",
+      "value": "3001"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}

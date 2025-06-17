@@ -115,6 +115,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
 
       const { events, header } = block;
       const currentBlockNumber = header?.blockNumber;
+      const timestamp = header?.timestamp;
 
       if (events.length === 0) {
         logger.log(`No events found in block ${header?.blockNumber}`);
@@ -132,64 +133,108 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
           );
 
           const { db: database } = useDrizzleStorage();
+
           const eventKey = event.keys[0];
           switch (eventKey) {
             case COURSE_CREATED:
               logger.info("Processing CourseCreated event");
-              await handleCourseCreated(event, currentBlockNumber, database);
+              await handleCourseCreated(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_REPLACED:
               logger.info("Processing CourseReplaced event");
-              await handleCourseReplaced(event, currentBlockNumber, database);
+              await handleCourseReplaced(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_CERT_CLAIMED:
               await handleCourseCertClaimed(
                 event,
                 currentBlockNumber,
+                timestamp,
                 database
               );
               break;
 
             case ADMIN_TRANSFERRED:
-              await handleAdminTransferred(event, currentBlockNumber, database);
+              await handleAdminTransferred(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_SUSPENDED:
-              await handleCourseSuspended(event, currentBlockNumber, database);
+              await handleCourseSuspended(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_UNSUSPENDED:
               await handleCourseUnsuspended(
                 event,
                 currentBlockNumber,
+                timestamp,
                 database
               );
               break;
 
             case COURSE_REMOVED:
-              await handleCourseRemoved(event, currentBlockNumber, database);
+              await handleCourseRemoved(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_PRICE_UPDATED:
               await handleCoursePriceUpdated(
                 event,
                 currentBlockNumber,
+                timestamp,
                 database
               );
               break;
 
             case ACQUIRED_COURSE:
-              await handleAcquiredCourse(event, currentBlockNumber, database);
+              await handleAcquiredCourse(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_APPROVED:
-              await handleCourseApproved(event, currentBlockNumber, database);
+              await handleCourseApproved(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             case COURSE_UNAPPROVED:
-              await handleCourseUnapproved(event, currentBlockNumber, database);
+              await handleCourseUnapproved(
+                event,
+                currentBlockNumber,
+                timestamp,
+                database
+              );
               break;
 
             default:

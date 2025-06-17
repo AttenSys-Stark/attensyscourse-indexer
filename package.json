@@ -3,11 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "prepare": "apibara prepare",
     "dev": "apibara dev",
-    "start": "apibara start",
-    "build": "apibara build",
+    "start": "node dist/api.js",
+    "build": "tsc",
+    "postinstall": "npm run build",
     "typecheck": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",

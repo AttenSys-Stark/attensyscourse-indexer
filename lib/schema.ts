@@ -23,6 +23,7 @@ export const courseCreated = pgTable(
     courseIpfsUri: varchar("course_ipfs_uri", { length: 255 }).notNull(),
     isApproved: boolean("is_approved").notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseCreatedIdentifier: unique(
@@ -39,6 +40,7 @@ export const courseReplaced = pgTable(
     owner_: varchar("owner_", { length: 255 }).notNull(),
     newCourseUri: varchar("new_course_uri", { length: 255 }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseReplacedIdentifier: unique(
@@ -54,6 +56,7 @@ export const courseCertClaimed = pgTable(
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     candidate: varchar("candidate", { length: 255 }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseCertClaimedIdentifier: unique(
@@ -68,6 +71,7 @@ export const adminTransferred = pgTable(
     id: serial("id").primaryKey().notNull(),
     newAdmin: varchar("new_admin", { length: 255 }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueAdminTransferredAdmin: unique("unique_admin_transferred_admin").on(
@@ -82,6 +86,7 @@ export const courseSuspended = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseSuspendedIdentifier: unique(
@@ -96,6 +101,7 @@ export const courseUnsuspended = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseUnsuspendedIdentifier: unique(
@@ -110,6 +116,7 @@ export const courseRemoved = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseRemovedIdentifier: unique(
@@ -125,6 +132,7 @@ export const coursePriceUpdated = pgTable(
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     newPrice: bigint("new_price", { mode: "number" }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCoursePriceUpdatedIdentifier: unique(
@@ -141,6 +149,7 @@ export const acquiredCourse = pgTable(
     owner: varchar("owner", { length: 255 }).notNull(),
     candidate: varchar("candidate", { length: 255 }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueAcquiredCourseIdentifierOwner: unique(
@@ -155,6 +164,7 @@ export const courseApproved = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseApprovedIdentifier: unique(
@@ -169,6 +179,7 @@ export const courseUnapproved = pgTable(
     id: serial("id").primaryKey().notNull(),
     courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     blockNumber: bigint("block_number", { mode: "number" }).notNull(),
+    timestamp: varchar("timestamp", { length: 255 }).notNull(),
   },
   (table) => ({
     uniqueCourseUnapprovedIdentifier: unique(

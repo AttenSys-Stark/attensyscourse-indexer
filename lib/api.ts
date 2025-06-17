@@ -24,10 +24,12 @@ const port = process.env.PORT || 3001;
 let db;
 
 try {
+  console.log("Initializing database connection...");
   const dbConfig = getDrizzlePgDatabase(
     process.env.DATABASE_URL || "postgres://localhost:5432/attensyscourse"
   );
   db = dbConfig.db;
+  console.log("Database connection initialized successfully");
 } catch (error) {
   console.error("Failed to initialize database:", error);
   process.exit(1);
@@ -38,8 +40,16 @@ app.use(express.json());
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  console.error("Error in request:", {
+    path: req.path,
+    method: req.method,
+    error: err.message,
+    stack: err.stack,
+  });
+  res.status(500).json({
+    error: "Something went wrong!",
+    message: err.message,
+  });
 });
 
 // Helper function to safely query tables
@@ -49,49 +59,76 @@ const safeQuery = async (
   next: NextFunction
 ) => {
   try {
+    console.log(`Querying table: ${table.name}`);
     // First, check if the table exists and has data
     const result = await db.select().from(table);
+    console.log(`Found ${result.length} rows in table ${table.name}`);
 
     // Convert and validate the data
     const validResults = result
       .map((row) => {
-        // Create a new object to avoid modifying the original
-        const processedRow = { ...row };
+        try {
+          // Create a new object to avoid modifying the original
+          const processedRow = { ...row };
 
-        // Handle courseIdentifier conversion
-        if (processedRow.courseIdentifier !== undefined) {
-          const courseId = Number(processedRow.courseIdentifier);
-          if (!isNaN(courseId)) {
-            processedRow.courseIdentifier = courseId;
-          } else {
-            console.warn(
-              `Invalid courseIdentifier found: ${processedRow.courseIdentifier}`
-            );
-            return null;
+          // Handle courseIdentifier conversion
+          if (processedRow.courseIdentifier !== undefined) {
+            const courseId = Number(processedRow.courseIdentifier);
+            if (!isNaN(courseId)) {
+              processedRow.courseIdentifier = courseId;
+            } else {
+              console.warn(
+                `Invalid courseIdentifier found: ${processedRow.courseIdentifier}`
+              );
+              return null;
+            }
           }
-        }
 
-        // Handle newPrice conversion if it exists (for price updated courses)
-        if (processedRow.newPrice !== undefined) {
-          const price = Number(processedRow.newPrice);
-          if (!isNaN(price)) {
-            processedRow.newPrice = price;
-          } else {
-            console.warn(`Invalid newPrice found: ${processedRow.newPrice}`);
-            return null;
+          // Handle newPrice conversion if it exists (for price updated courses)
+          if (processedRow.newPrice !== undefined) {
+            const price = Number(processedRow.newPrice);
+            if (!isNaN(price)) {
+              processedRow.newPrice = price;
+            } else {
+              console.warn(`Invalid newPrice found: ${processedRow.newPrice}`);
+              return null;
+            }
           }
-        }
 
-        return processedRow;
+          // Handle timestamp formatting
+          if (processedRow.timestamp) {
+            try {
+              // Ensure timestamp is in ISO format
+              const date = new Date(processedRow.timestamp);
+              if (!isNaN(date.getTime())) {
+                processedRow.timestamp = date.toISOString();
+              } else {
+                console.warn(
+                  `Invalid timestamp found: ${processedRow.timestamp}`
+                );
+                // Keep original timestamp if conversion fails
+              }
+            } catch (error) {
+              console.warn(`Error processing timestamp: ${error}`);
+              // Keep original timestamp if conversion fails
+            }
+          }
+
+          return processedRow;
+        } catch (error) {
+          console.error(`Error processing row:`, error);
+          return null;
+        }
       })
       .filter(Boolean); // Remove any null entries
 
+    console.log(`Returning ${validResults.length} valid results`);
     res.json(validResults);
   } catch (error) {
-    console.error(`Error querying table:`, error);
+    console.error(`Error querying table ${table.name}:`, error);
     // Send a more specific error message
     res.status(500).json({
-      error: `Error querying table`,
+      error: `Error querying table ${table.name}`,
       details: error instanceof Error ? error.message : "Unknown error",
     });
   }
@@ -206,7 +243,22 @@ app.get(
         return res.status(404).json({ error: "Course not found" });
       }
 
-      res.json(course[0]);
+      // Process the course data
+      const processedCourse = { ...course[0] };
+
+      // Handle timestamp formatting
+      if (processedCourse.timestamp) {
+        try {
+          const date = new Date(processedCourse.timestamp);
+          if (!isNaN(date.getTime())) {
+            processedCourse.timestamp = date.toISOString();
+          }
+        } catch (error) {
+          console.warn(`Error processing timestamp: ${error}`);
+        }
+      }
+
+      res.json(processedCourse);
     } catch (error) {
       next(error);
     }
@@ -224,7 +276,23 @@ app.get(
         .from(acquiredCourse)
         .where(eq(acquiredCourse.owner, owner));
 
-      res.json(courses);
+      // Process each course's timestamp
+      const processedCourses = courses.map((course) => {
+        const processedCourse = { ...course };
+        if (processedCourse.timestamp) {
+          try {
+            const date = new Date(processedCourse.timestamp);
+            if (!isNaN(date.getTime())) {
+              processedCourse.timestamp = date.toISOString();
+            }
+          } catch (error) {
+            console.warn(`Error processing timestamp: ${error}`);
+          }
+        }
+        return processedCourse;
+      });
+
+      res.json(processedCourses);
     } catch (error) {
       next(error);
     }

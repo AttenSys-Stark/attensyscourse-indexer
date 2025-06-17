@@ -1,0 +1,1 @@
+ALTER TABLE "course_created" DROP CONSTRAINT "course_created_course_identifier_unique";

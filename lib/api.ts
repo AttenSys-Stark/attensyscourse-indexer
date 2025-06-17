@@ -22,6 +22,7 @@ const port = process.env.PORT || 3001;
 
 // Initialize database connection
 let db;
+
 try {
   const dbConfig = getDrizzlePgDatabase(
     process.env.DATABASE_URL || "postgres://localhost:5432/attensyscourse"

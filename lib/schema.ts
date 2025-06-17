@@ -13,13 +13,9 @@ export const courseCreated = pgTable(
   "course_created",
   {
     id: serial("id").primaryKey().notNull(),
-    courseAddress: varchar("course_address", { length: 255 })
-      .unique()
-      .notNull(),
+    courseAddress: varchar("course_address", { length: 255 }).notNull(),
     courseCreator: varchar("course_creator", { length: 255 }).notNull(),
-    courseIdentifier: bigint("course_identifier", { mode: "number" })
-      .notNull()
-      .unique(),
+    courseIdentifier: bigint("course_identifier", { mode: "number" }).notNull(),
     accessment: boolean("accessment").notNull(),
     baseUri: varchar("base_uri", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
@@ -31,7 +27,7 @@ export const courseCreated = pgTable(
   (table) => ({
     uniqueCourseCreatedIdentifier: unique(
       "unique_course_created_identifier"
-    ).on(table.courseIdentifier),
+    ).on(table.courseIdentifier, table.courseCreator),
   })
 );
 

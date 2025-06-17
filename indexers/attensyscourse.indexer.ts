@@ -39,7 +39,9 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
     attensysCourseAddress,
   } = runtimeConfig["attensyscourse"];
 
-  const db = getDrizzlePgDatabase(postgresConnectionString);
+  const db = getDrizzlePgDatabase(
+    postgresConnectionString || "postgres://localhost:5432/attensyscourse"
+  );
 
   return defineIndexer(StarknetStream)({
     streamUrl,
@@ -114,68 +116,20 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       const { events, header } = block;
       const currentBlockNumber = header?.blockNumber;
 
-      // Enhanced logging for block progression
-      logger.info(`Starting block configured: ${startingBlock}`);
-      logger.info(`Current block being processed: ${currentBlockNumber}`);
-      logger.info(`Block range: ${startingBlock} -> ${currentBlockNumber}`);
-      logger.info(`Block finality: ${finality}`);
-
-      // Safely log endCursor without BigInt serialization issues
-      try {
-        const cursorStr =
-          typeof endCursor === "bigint"
-            ? endCursor.toString()
-            : JSON.stringify(endCursor);
-        logger.info(`End cursor: ${cursorStr}`);
-      } catch (error) {
-        logger.info(`End cursor: [Unable to serialize]`);
-      }
-
-      // Check if we're processing blocks in order
-      if (BigInt(currentBlockNumber) < BigInt(startingBlock)) {
-        logger.warn(
-          `Skipping block ${currentBlockNumber} as it's before our starting block ${startingBlock}`
-        );
+      if (events.length === 0) {
+        logger.log(`No events found in block ${header?.blockNumber}`);
         return;
       }
-
-      // Log block processing status
-      logger.info(
-        `Processing block ${currentBlockNumber} with ${events.length} events`
-      );
-      logger.info(
-        `Contract address we're monitoring: ${attensysCourseAddress}`
-      );
-
       // Process events in the block
       logger.info(
         `Found ${events.length} events in block ${currentBlockNumber}`
       );
-      for (const event of events) {
-        logger.info(`Event keys: ${event.keys.join(", ")}`);
-        logger.info(`Event data: ${JSON.stringify(event.data)}`);
-        logger.info(
-          `Event keys in hex: ${event.keys.map((k: bigint) => k.toString(16)).join(", ")}`
-        );
-      }
 
       for (const event of events) {
         try {
           logger.info(
             `⛓️ Processing event ${event.eventIndex} from tx=${event.transactionHash}`
           );
-          logger.info(`Event address: ${event.address}`);
-          logger.info(`Event keys: ${event.keys.join(", ")}`);
-
-          // Check if this event is from our contract
-          if (
-            event.address.toLowerCase() !== attensysCourseAddress.toLowerCase()
-          ) {
-            logger.info(
-              `Skipping event from different contract: ${event.address}`
-            );
-            continue;
-          }
 
           const { db: database } = useDrizzleStorage();
           const eventKey = event.keys[0];

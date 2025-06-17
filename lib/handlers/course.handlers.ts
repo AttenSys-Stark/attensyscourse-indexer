@@ -13,6 +13,7 @@ import {
   courseApproved,
   courseUnapproved,
 } from "../schema";
+import { sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { Abi } from "starknet";
 import { useLogger } from "apibara/plugins";
@@ -64,65 +65,71 @@ export async function handleCourseCreated(
       is_approved,
     } = decodedEvent.args;
 
-    // Convert BigInt to number for database storage
-    const courseIdentifier =
-      typeof course_identifier === "bigint"
-        ? Number(course_identifier)
-        : Number(course_identifier);
-
-    const values = {
-      courseAddress: event.address as string,
-      courseCreator: owner_ as string,
-      courseIdentifier,
-      accessment: accessment_ as boolean,
-      baseUri: hexToUtf8(base_uri),
-      name: hexToUtf8(name_),
-      symbol: hexToUtf8(symbol),
-      courseIpfsUri: hexToUtf8(course_ipfs_uri),
-      isApproved: is_approved as boolean,
-      blockNumber: blockNumber,
-    };
-
-    // Log values safely
-    const logValues = Object.entries(values).reduce(
-      (acc, [key, value]) => {
-        acc[key] = typeof value === "bigint" ? String(value) : value;
-        return acc;
-      },
-      {} as Record<string, any>
+    logger.info(
+      "Insert values: " +
+        JSON.stringify({
+          courseAddress: event.address,
+          courseCreator: owner_,
+          courseIdentifier: Number(course_identifier),
+          accessment: accessment_,
+          baseUri: hexToUtf8(base_uri),
+          name: hexToUtf8(name_),
+          symbol: hexToUtf8(symbol),
+          courseIpfsUri: hexToUtf8(course_ipfs_uri),
+          isApproved: is_approved,
+          blockNumber: Number(blockNumber),
+        })
     );
 
-    logger.info(`Attempting to insert values: ${JSON.stringify(logValues)}`);
-
+    // const result = await db
+    //   .insert(courseCreated)
+    //   .values({
+    //     courseAddress: event.address as string,
+    //     courseCreator: owner_ as string,
+    //     courseIdentifier: Number(course_identifier),
+    //     accessment: accessment_ as boolean,
+    //     baseUri: hexToUtf8(base_uri) as string,
+    //     name: hexToUtf8(name_) as string,
+    //     symbol: hexToUtf8(symbol) as string,
+    //     courseIpfsUri: hexToUtf8(course_ipfs_uri) as string,
+    //     isApproved: is_approved as boolean,
+    //     blockNumber: Number(blockNumber),
+    //   }).returning({ id: courseCreated.id });;
+    // console.log("Insert result:", result);
     try {
-      const result = await db
-        .insert(courseCreated)
-        .values(values)
-        .onConflictDoUpdate({
-          target: [courseCreated.courseIdentifier],
-          set: {
-            courseAddress: values.courseAddress,
-            courseCreator: values.courseCreator,
-            accessment: values.accessment,
-            baseUri: values.baseUri,
-            name: values.name,
-            symbol: values.symbol,
-            courseIpfsUri: values.courseIpfsUri,
-            isApproved: values.isApproved,
-            blockNumber: values.blockNumber,
-          },
-        })
-        .returning();
-
-      console.log("Insert result:", result);
-      logger.info("Successfully processed CourseCreated event");
-    } catch (error) {
-      console.error(`Error in handleCourseCreated: ${error}`);
-      throw error;
+      const result = await db.execute(sql`
+        INSERT INTO course_created (
+          course_address, course_creator, course_identifier, accessment,
+          base_uri, name, symbol, course_ipfs_uri, is_approved, block_number
+        ) VALUES (
+          ${event.address},
+          ${owner_},
+          ${Number(course_identifier)},
+          ${accessment_},
+          ${hexToUtf8(base_uri)},
+          ${hexToUtf8(name_)},
+          ${hexToUtf8(symbol)},
+          ${hexToUtf8(course_ipfs_uri)},
+          ${is_approved},
+          ${Number(blockNumber)}
+        )
+        ON CONFLICT (course_identifier, course_creator) DO NOTHING
+        RETURNING id;
+      `);
+      if (result.rows.length === 0) {
+        console.log("Insert skipped: entry already exists");
+      }
+    } catch (err) {
+      console.error("❌ Insert failed:", err); // 🔥 This will show the actual DB error
+      throw err;
     }
+    logger.info("Successfully processed CourseCreated event");
   } catch (error) {
     logger.error(`Error in handleCourseCreated: ${error}`);
-    throw error;
+    if (error instanceof Error && error.stack) {
+      logger.error(error.stack);
+    }
+    // throw error;
   }
 }
 

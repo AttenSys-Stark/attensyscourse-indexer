@@ -1,5 +1,5 @@
 import { decodeEvent } from "@apibara/starknet";
-import { attensysCourseAbi } from "../../abi/abi";
+import { attensysCourseAbi } from "../../abi/abi.js";
 import {
   courseCreated,
   courseReplaced,
@@ -12,7 +12,7 @@ import {
   acquiredCourse,
   courseApproved,
   courseUnapproved,
-} from "../schema";
+} from "../schema.js";
 import { sql } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { Abi } from "starknet";
@@ -73,10 +73,10 @@ export async function handleCourseCreated(
           courseCreator: owner_,
           courseIdentifier: Number(course_identifier),
           accessment: accessment_,
-          baseUri: hexToUtf8(base_uri),
-          name: hexToUtf8(name_),
-          symbol: hexToUtf8(symbol),
-          courseIpfsUri: hexToUtf8(course_ipfs_uri),
+          baseUri: hexToUtf8(base_uri as string),
+          name: hexToUtf8(name_ as string),
+          symbol: hexToUtf8(symbol as string),
+          courseIpfsUri: hexToUtf8(course_ipfs_uri as string),
           isApproved: is_approved,
           blockNumber: Number(blockNumber),
           timestamp: timestamp as string,
@@ -93,10 +93,10 @@ export async function handleCourseCreated(
           ${owner_},
           ${Number(course_identifier)},
           ${accessment_},
-          ${hexToUtf8(base_uri)},
-          ${hexToUtf8(name_)},
-          ${hexToUtf8(symbol)},
-          ${hexToUtf8(course_ipfs_uri)},
+          ${hexToUtf8(base_uri as string)},
+          ${hexToUtf8(name_ as string)},
+          ${hexToUtf8(symbol as string)},
+          ${hexToUtf8(course_ipfs_uri as string)},
           ${is_approved},
           ${Number(blockNumber)},
           ${timestamp}

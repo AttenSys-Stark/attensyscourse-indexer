@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { getDrizzlePgDatabase } from "./db";
+import { getDrizzlePgDatabase } from "./db.js";
 import {
   acquiredCourse,
   courseCreated,
@@ -13,7 +13,7 @@ import {
   coursePriceUpdated,
   courseApproved,
   courseUnapproved,
-} from "./schema";
+} from "./schema.js";
 import { eq, sql } from "drizzle-orm";
 import { PgTable } from "drizzle-orm/pg-core";
 
@@ -59,10 +59,10 @@ const safeQuery = async (
   next: NextFunction
 ) => {
   try {
-    console.log(`Querying table: ${table.name}`);
+    console.log(`Querying table: ${(table as any).name}`);
     // First, check if the table exists and has data
     const result = await db.select().from(table);
-    console.log(`Found ${result.length} rows in table ${table.name}`);
+    console.log(`Found ${result.length} rows in table ${(table as any).name}`);
 
     // Convert and validate the data
     const validResults = result
@@ -125,10 +125,10 @@ const safeQuery = async (
     console.log(`Returning ${validResults.length} valid results`);
     res.json(validResults);
   } catch (error) {
-    console.error(`Error querying table ${table.name}:`, error);
+    console.error(`Error querying table ${(table as any).name}:`, error);
     // Send a more specific error message
     res.status(500).json({
-      error: `Error querying table ${table.name}`,
+      error: `Error querying table ${(table as any).name}`,
       details: error instanceof Error ? error.message : "Unknown error",
     });
   }

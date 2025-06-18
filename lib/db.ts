@@ -11,7 +11,7 @@ export function getDrizzlePgDatabase() {
 
   // Create a new pool with SSL configuration
   const pool = new Pool({
-    connectionString,
+    connectionString: connectionString.replace("db.", "db.ipv4."),
     ssl: {
       rejectUnauthorized: false,
     },

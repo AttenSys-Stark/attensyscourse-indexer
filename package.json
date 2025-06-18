@@ -9,9 +9,10 @@
   "scripts": {
     "prepare": "apibara prepare",
     "dev": "apibara dev",
-    "start": "node dist/api.js",
     "build": "tsc",
+    "start": "node dist/api.js",
     "postinstall": "npm run build",
+    "heroku-postbuild": "npm run build",
     "typecheck": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",
     "drizzle:migrate": "drizzle-kit migrate",

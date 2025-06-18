@@ -1,4 +1,4 @@
-import * as schema from "./schema";
+import * as schema from "./schema.js";
 import { drizzle as nodePgDrizzle } from "drizzle-orm/node-postgres";
 import { drizzle as pgLiteDrizzle } from "drizzle-orm/pglite";
 import pg from "pg";

@@ -21,7 +21,19 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Initialize database connection
-const db = getDrizzlePgDatabase();
+let db;
+
+try {
+  console.log("Initializing database connection...");
+  const dbConfig = getDrizzlePgDatabase(
+    process.env.DATABASE_URL || "postgres://localhost:5432/attensyscourse"
+  );
+  db = dbConfig.db;
+  console.log("Database connection initialized successfully");
+} catch (error) {
+  console.error("Failed to initialize database:", error);
+  process.exit(1);
+}
 
 app.use(cors());
 app.use(express.json());
@@ -265,7 +277,7 @@ app.get(
         .where(eq(acquiredCourse.owner, owner));
 
       // Process each course's timestamp
-      const processedCourses = courses.map((course: Course) => {
+      const processedCourses = courses.map((course) => {
         const processedCourse = { ...course };
         if (processedCourse.timestamp) {
           try {
@@ -375,12 +387,3 @@ process.on("SIGTERM", () => {
     process.exit(0);
   });
 });
-
-interface Course {
-  id: number;
-  courseIdentifier: number;
-  owner: string;
-  candidate: string;
-  blockNumber: number;
-  timestamp: string;
-}

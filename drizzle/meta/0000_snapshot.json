@@ -1,5 +1,5 @@
 {
-  "id": "5a0de6bf-05ec-49b5-bc19-672af668cc3c",
+  "id": "b0c769c9-cdab-469a-b795-c6f3d4da8fd3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -35,6 +35,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -77,6 +83,12 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -114,6 +126,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -159,6 +177,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -248,24 +272,24 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "course_created_course_address_unique": {
-          "name": "course_created_course_address_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "course_address"
-          ]
-        },
         "unique_course_created_identifier": {
           "name": "unique_course_created_identifier",
           "nullsNotDistinct": false,
           "columns": [
-            "course_identifier"
+            "course_identifier",
+            "course_creator"
           ]
         }
       },
@@ -298,6 +322,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -337,6 +367,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -390,6 +426,12 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -427,6 +469,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }
@@ -468,6 +516,12 @@
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -505,6 +559,12 @@
         "block_number": {
           "name": "block_number",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         }

@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1749641866671,
-      "tag": "0000_dusty_iron_monger",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1749651064408,
-      "tag": "0001_remarkable_starbolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1750146448273,
-      "tag": "0002_open_zzzax",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1750154448897,
-      "tag": "0003_pink_ma_gnuci",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1750200093593,
-      "tag": "0004_blushing_cobalt_man",
+      "when": 1750250621999,
+      "tag": "0000_jittery_jane_foster",
       "breakpoints": true
     }
   ]

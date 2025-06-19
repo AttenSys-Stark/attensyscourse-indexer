@@ -10,7 +10,7 @@
     "prepare": "apibara prepare",
     "dev": "apibara dev",
     "build": "tsc",
-    "start": "node dist/api.js",
+    "start": "node dist/lib/api.js",
     "heroku-postbuild": "npm run build",
     "typecheck": "tsc --noEmit",
     "drizzle:generate": "drizzle-kit generate",
@@ -23,20 +23,29 @@
     "@apibara/starknet": "next",
     "@electric-sql/pglite": "^0.2.17",
     "apibara": "next",
+    "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.44.2",
-    "express": "^5.1.0",
+    "express": "^4.21.2",
+    "http": "^0.0.1-security",
+    "nodemailer": "^7.0.3",
     "pg": "^8.13.1",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1",
     "starknet": "^5.19.5",
     "tsx": "^4.19.4",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.23",
     "@types/node": "^20.19.0",
-    "@types/pg": "^8.11.10"
+    "@types/nodemailer": "^6.4.17",
+    "@types/pg": "^8.11.10",
+    "@types/qrcode": "^1.5.5"
   }
 }

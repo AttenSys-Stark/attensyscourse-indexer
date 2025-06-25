@@ -99,7 +99,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
       drizzleStorage({
         db: db.db,
         migrate: { migrationsFolder: "./drizzle" },
-        persistState: false,
+        persistState: true,
       }),
     ],
     async transform({

@@ -809,15 +809,7 @@ app.get(
     try {
       const { address } = req.params;
 
-      // Normalize address: handle extra zeros after 0x prefix
-      let normalizedAddress = address.toLowerCase();
-
-      // If it starts with 0x0, remove the extra 0
-      if (normalizedAddress.startsWith("0x0") && normalizedAddress.length > 3) {
-        normalizedAddress = "0x" + normalizedAddress.slice(3);
-      }
-
-      console.log(`Querying events for address: ${normalizedAddress}`);
+      console.log(`Querying events for address: ${address}`);
 
       // Fetch events from all tables where the address is involved
       const [
@@ -831,32 +823,32 @@ app.get(
         db
           .select()
           .from(courseCreated)
-          .where(eq(courseCreated.courseCreator, normalizedAddress)),
+          .where(eq(courseCreated.courseCreator, address)),
 
         // Courses replaced by this address
         db
           .select()
           .from(courseReplaced)
-          .where(eq(courseReplaced.owner_, normalizedAddress)),
+          .where(eq(courseReplaced.owner_, address)),
 
         // Certificates claimed by this address
         db
           .select()
           .from(courseCertClaimed)
-          .where(eq(courseCertClaimed.candidate, normalizedAddress)),
+          .where(eq(courseCertClaimed.candidate, address)),
 
         // Admin transfers to this address
         db
           .select()
           .from(adminTransferred)
-          .where(eq(adminTransferred.newAdmin, normalizedAddress)),
+          .where(eq(adminTransferred.newAdmin, address)),
 
         // Courses acquired by this address (as owner or candidate)
         db
           .select()
           .from(acquiredCourse)
           .where(
-            sql`${acquiredCourse.owner} = ${normalizedAddress} OR ${acquiredCourse.candidate} = ${normalizedAddress}`
+            sql`${acquiredCourse.owner} = ${address} OR ${acquiredCourse.candidate} = ${address}`
           ),
       ]);
 

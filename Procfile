@@ -1,2 +1,2 @@
 web: npm start
-indexer: apibara dev 
+indexer: npm apibara dev 

@@ -435,9 +435,10 @@ app.post("/api/welcome-email", async (req, res) => {
     res.status(200).json({ message: "Welcome email sent successfully" });
   } catch (err) {
     console.error("Error sending welcome email:", err);
-    res
-      .status(500)
-      .json({ message: "Failed to send welcome email", error: err instanceof Error ? err.message : String(err) });
+    res.status(500).json({
+      message: "Failed to send welcome email",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -448,12 +449,10 @@ app.post("/api/login-notification", async (req, res) => {
     res.status(200).json({ message: "Login notification sent successfully" });
   } catch (err) {
     console.error("Error sending login notification:", err);
-    res
-      .status(500)
-      .json({
-        message: "Failed to send login notification",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    res.status(500).json({
+      message: "Failed to send login notification",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -466,12 +465,10 @@ app.post("/api/course-approval-notification", async (req, res) => {
       .json({ message: "Course approval notification sent successfully" });
   } catch (err) {
     console.error("Error sending course approval notification:", err);
-    res
-      .status(500)
-      .json({
-        message: "Failed to send course approval notification",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    res.status(500).json({
+      message: "Failed to send course approval notification",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -482,12 +479,10 @@ app.post("/api/notify-admin-new-course", async (req, res) => {
     res.status(200).json({ message: "Admin notification sent successfully" });
   } catch (err) {
     console.error("Error sending admin notification:", err);
-    res
-      .status(500)
-      .json({
-        message: "Failed to send admin notification",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    res.status(500).json({
+      message: "Failed to send admin notification",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -500,12 +495,10 @@ app.post("/api/course-creation-notification", async (req, res) => {
       .json({ message: "Course creation notification sent successfully" });
   } catch (err) {
     console.error("Error sending course creation notification:", err);
-    res
-      .status(500)
-      .json({
-        message: "Failed to send course creation notification",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    res.status(500).json({
+      message: "Failed to send course creation notification",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -524,12 +517,10 @@ app.post("/api/course-disapproval-notification", async (req, res) => {
       .json({ message: "Course disapproval notification sent successfully" });
   } catch (err) {
     console.error("Error sending course disapproval notification:", err);
-    res
-      .status(500)
-      .json({
-        message: "Failed to send course disapproval notification",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    res.status(500).json({
+      message: "Failed to send course disapproval notification",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -543,12 +534,10 @@ app.post("/api/course-purchase-notification", async (req, res) => {
       .json({ message: "Course purchase notification sent successfully" });
   } catch (err) {
     console.error("Error sending course purchase notification:", err);
-    res
-      .status(500)
-      .json({
-        message: "Failed to send course purchase notification",
-        error: err instanceof Error ? err.message : String(err),
-      });
+    res.status(500).json({
+      message: "Failed to send course purchase notification",
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 });
 
@@ -808,6 +797,123 @@ app.get(
 
       res.json(processedCourses);
     } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Get all events for a specific address (personalized notifications)
+app.get(
+  "/api/events/address/:address",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { address } = req.params;
+
+      // Normalize address: handle extra zeros after 0x prefix
+      let normalizedAddress = address.toLowerCase();
+
+      // If it starts with 0x0, remove the extra 0
+      if (normalizedAddress.startsWith("0x0") && normalizedAddress.length > 3) {
+        normalizedAddress = "0x" + normalizedAddress.slice(3);
+      }
+
+      console.log(`Querying events for address: ${normalizedAddress}`);
+
+      // Fetch events from all tables where the address is involved
+      const [
+        createdCourses,
+        replacedCourses,
+        certClaimedCourses,
+        adminTransferredEvents,
+        acquiredCourses,
+      ] = await Promise.all([
+        // Courses created by this address
+        db
+          .select()
+          .from(courseCreated)
+          .where(eq(courseCreated.courseCreator, normalizedAddress)),
+
+        // Courses replaced by this address
+        db
+          .select()
+          .from(courseReplaced)
+          .where(eq(courseReplaced.owner_, normalizedAddress)),
+
+        // Certificates claimed by this address
+        db
+          .select()
+          .from(courseCertClaimed)
+          .where(eq(courseCertClaimed.candidate, normalizedAddress)),
+
+        // Admin transfers to this address
+        db
+          .select()
+          .from(adminTransferred)
+          .where(eq(adminTransferred.newAdmin, normalizedAddress)),
+
+        // Courses acquired by this address (as owner or candidate)
+        db
+          .select()
+          .from(acquiredCourse)
+          .where(
+            sql`${acquiredCourse.owner} = ${normalizedAddress} OR ${acquiredCourse.candidate} = ${normalizedAddress}`
+          ),
+      ]);
+
+      console.log(
+        `Found ${createdCourses.length + replacedCourses.length + certClaimedCourses.length + adminTransferredEvents.length + acquiredCourses.length} total events`
+      );
+
+      // Combine all events and add type information
+      const allEvents = [
+        ...createdCourses.map((event) => ({
+          ...event,
+          type: "COURSE_CREATED",
+          eventType: "created",
+        })),
+        ...replacedCourses.map((event) => ({
+          ...event,
+          type: "COURSE_REPLACED",
+          eventType: "replaced",
+        })),
+        ...certClaimedCourses.map((event) => ({
+          ...event,
+          type: "CERT_CLAIMED",
+          eventType: "cert-claimed",
+        })),
+        ...adminTransferredEvents.map((event) => ({
+          ...event,
+          type: "ADMIN_TRANSFERRED",
+          eventType: "admin-transferred",
+        })),
+        ...acquiredCourses.map((event) => ({
+          ...event,
+          type: "COURSE_ACQUIRED",
+          eventType: "acquired",
+        })),
+      ];
+
+      // Process timestamps and sort by block number (newest first)
+      const processedEvents = allEvents
+        .map((event) => {
+          const processedEvent = { ...event };
+          if (processedEvent.timestamp) {
+            try {
+              const date = new Date(processedEvent.timestamp);
+              if (!isNaN(date.getTime())) {
+                processedEvent.timestamp = date.toISOString();
+              }
+            } catch (error) {
+              console.warn(`Error processing timestamp: ${error}`);
+            }
+          }
+          return processedEvent;
+        })
+        .sort((a, b) => b.blockNumber - a.blockNumber);
+
+      res.json(processedEvents);
+    } catch (error) {
+      console.error("Error fetching events by address:", error);
       next(error);
     }
   }

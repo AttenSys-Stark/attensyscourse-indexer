@@ -39,9 +39,7 @@ export default function (runtimeConfig: ApibaraRuntimeConfig) {
     attensysCourseAddress,
   } = runtimeConfig["attensyscourse"];
 
-  const db = getDrizzlePgDatabase(
-    postgresConnectionString || "postgres://localhost:5432/attensyscourse"
-  );
+  const db = getDrizzlePgDatabase(postgresConnectionString);
 
   return defineIndexer(StarknetStream)({
     streamUrl,

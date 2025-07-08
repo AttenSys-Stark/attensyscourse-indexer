@@ -818,6 +818,7 @@ app.get(
         certClaimedCourses,
         adminTransferredEvents,
         acquiredCourses,
+        removedCourses,
       ] = await Promise.all([
         // Courses created by this address
         db
@@ -850,10 +851,24 @@ app.get(
           .where(
             sql`${acquiredCourse.owner} = ${address} OR ${acquiredCourse.candidate} = ${address}`
           ),
+
+        // Courses removed by this address (join with courseCreated to get owner)
+        db
+          .select({
+            courseIdentifier: courseRemoved.courseIdentifier,
+            blockNumber: courseRemoved.blockNumber,
+            timestamp: courseRemoved.timestamp,
+          })
+          .from(courseRemoved)
+          .innerJoin(
+            courseCreated,
+            eq(courseRemoved.courseIdentifier, courseCreated.courseIdentifier)
+          )
+          .where(eq(courseCreated.courseCreator, address)),
       ]);
 
       console.log(
-        `Found ${createdCourses.length + replacedCourses.length + certClaimedCourses.length + adminTransferredEvents.length + acquiredCourses.length} total events`
+        `Found ${createdCourses.length + replacedCourses.length + certClaimedCourses.length + adminTransferredEvents.length + acquiredCourses.length + removedCourses.length} total events`
       );
 
       // Combine all events and add type information
@@ -882,6 +897,11 @@ app.get(
           ...event,
           type: "COURSE_ACQUIRED",
           eventType: "acquired",
+        })),
+        ...removedCourses.map((event) => ({
+          ...event,
+          type: "COURSE_REMOVED",
+          eventType: "removed",
         })),
       ];
 
